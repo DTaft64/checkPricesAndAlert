@@ -1,4 +1,19 @@
 function checkPricesAndAlert() {
+  // Check if it's within market hours (9:30 AM - 4:30 PM EST)
+  const now = new Date();
+  const estOffset = -5; // EST offset from UTC
+  const estTime = new Date(now.getTime() + (estOffset + now.getTimezoneOffset()/60)*3600*1000);
+  const hours = estTime.getHours();
+  const minutes = estTime.getMinutes();
+  const currentTime = hours + minutes/60;
+  
+  // Check if it's a weekday and within market hours
+  if (estTime.getDay() === 0 || estTime.getDay() === 6 || // Weekend
+      currentTime < 9.5 || currentTime > 16.5) {  // Before 9:30 AM or after 4:30 PM
+    Logger.log("Outside of market hours. Script will not run.");
+    return;
+  }
+
   const sheet = SpreadsheetApp.getActiveSheet();
   
   // Get email and threshold percentage from H1 and H2
@@ -66,8 +81,13 @@ function checkPricesAndAlert() {
   });
 }
 
-// Add a trigger to run this function periodically
+// Create time-based trigger
 function createTrigger() {
+  // Delete any existing triggers
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  
+  // Create new trigger to run every 5 minutes
   ScriptApp.newTrigger('checkPricesAndAlert')
     .timeBased()
     .everyMinutes(5)  // Runs every 5 minutes
