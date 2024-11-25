@@ -1,4 +1,4 @@
-function checkPricesAndAlert() {
+function stockPricesAlerts() {
   // Check if it's within market hours (9:30 AM - 4:30 PM EST)
   const now = new Date();
   const estOffset = -5; // EST offset from UTC
@@ -88,8 +88,8 @@ function createTrigger() {
   triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
   
   // Create new trigger to run every 5 minutes
-  ScriptApp.newTrigger('checkPricesAndAlert')
+  ScriptApp.newTrigger('stockPricesAlerts')
     .timeBased()
-    .everyMinutes(5)  // Runs every 5 minutes
+    .everyMinutes(5)
     .create();
 }
