@@ -59,12 +59,18 @@ function stockPricesAlerts() {
       Utilities.sleep(100);
       const currentPrice = range.getValue();
 
+      // Skip if currentPrice is #N/A
+      if (currentPrice === '#N/A' || currentPrice === '#N/A' || currentPrice === '') {
+        Logger.log(`Skipping ${row.ticker} due to invalid price data`);
+        return;  // Skip to next iteration
+      }
+
       // Get current and previous status
       const currentStatus = sheet.getRange(row.rowNumber, 4);  // Column D
       const previousStatus = sheet.getRange(row.rowNumber, 5).getValue(); // Column E
 
-      // Check if status changed
-      if (currentStatus.getValue() != previousStatus) {
+      // Check if status changed and price is valid
+      if (currentStatus.getValue() != previousStatus && typeof currentPrice === 'number') {
         // Set background to red when status changes
         currentStatus.setBackground('#FF0000');
         
