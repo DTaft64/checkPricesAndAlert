@@ -1,5 +1,5 @@
 function stockPricesAlerts() {
-  // Check if it's within market hours (9:30 AM - 4:30 PM EST)
+  // Calculates the current time in EST as a decimal value (hours and fractional minutes). For a later constraint around open/close market hours.
   const now = new Date();
   const estOffset = -5; // EST offset from UTC
   const estTime = new Date(now.getTime() + (estOffset + now.getTimezoneOffset()/60)*3600*1000);
@@ -7,9 +7,9 @@ function stockPricesAlerts() {
   const minutes = estTime.getMinutes();
   const currentTime = hours + minutes/60;
   
-  // Check if it's a weekday and within market hours
+  // Check if it's a weekday and within market hours after 9:30 AM, before 4 PM.
   if (estTime.getDay() === 0 || estTime.getDay() === 6 || // Weekend
-      currentTime < 9.5 || currentTime > 16.5) {  // Before 9:30 AM or after 4:30 PM
+      currentTime < 9.5 || currentTime > 16) {  // Before 9:30 AM or after 4:30 PM
     Logger.log("Outside of market hours. Script will not run.");
     return;
   }
