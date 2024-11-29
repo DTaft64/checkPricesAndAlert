@@ -1,4 +1,22 @@
 function stockPricesAlerts() {
+  
+  // Column definitions
+  const COLUMNS = {
+    TICKER: 'A',           // Ticker symbols
+    PRICE_ALERT: 'B',      // Price alert thresholds
+    CURRENT: 'C',          // Current prices
+    TF: 'D',              // True/False status
+    LAST_RUN: 'E',        // Previous run status
+    INFO_TAG: 'G',        // Info tags
+    INFO: 'H'             // Info/settings
+  };
+
+  // Row definitions for info column
+  const INFO_ROWS = {
+    EMAIL: '2',           // Email address
+    THRESHOLD: '3'        // Threshold percentage
+  };
+
   // Calculates the current time in EST as a decimal value (hours and fractional minutes). For a later constraint around open/close market hours.
   const now = new Date();
   const estOffset = -5; // EST offset from UTC
@@ -16,25 +34,19 @@ function stockPricesAlerts() {
 
   const sheet = SpreadsheetApp.getActiveSheet();
   
-  // Get email and threshold percentage from H1 and H2
-  const emailAddress = sheet.getRange("H1").getValue();
-  const thresholdPercent = sheet.getRange("H2").getValue() / 100;  // Convert to decimal
-  if (!emailAddress || !thresholdPercent) {
-    Logger.log("Missing email address in H1 or threshold percentage in H2");
-    return;
-  }
-  
-  // Copy checkbox values from D to E before clearing
+  // Updated references using constants
+  const emailAddress = sheet.getRange(`${COLUMNS.INFO}${INFO_ROWS.EMAIL}`).getValue();
+  const thresholdPercent = sheet.getRange(`${COLUMNS.INFO}${INFO_ROWS.THRESHOLD}`).getValue() / 100;
+
+  // Updated range references
   const lastRow = sheet.getLastRow();
-  const checkboxValues = sheet.getRange("D2:D" + lastRow).getValues();
-  sheet.getRange("E2:E" + lastRow).setValues(checkboxValues);
+  const checkboxValues = sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`).getValues();
+  sheet.getRange(`${COLUMNS.LAST_RUN}2:${COLUMNS.LAST_RUN}${lastRow}`).setValues(checkboxValues);
   
-  // Clear column C values and reset column D background colors
-  sheet.getRange("C2:C" + lastRow).clearContent();
-  sheet.getRange("D2:D" + lastRow).setBackground(null);
+  sheet.getRange(`${COLUMNS.CURRENT}2:${COLUMNS.CURRENT}${lastRow}`).clearContent();
+  sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`).setBackground(null);
   
-  // Set up checkbox formula in column D using dynamic threshold
-  const checkboxRange = sheet.getRange("D2:D" + lastRow);
+  const checkboxRange = sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`);
   checkboxRange.setFormula(`=IF(AND(A2<>"", B2<>""), IF(AND(C2<>"", B2<>""), AND(C2>=(B2*(1-${thresholdPercent})), C2<=(B2*(1+${thresholdPercent}))), FALSE), "")`);
 
   // Get and validate data
