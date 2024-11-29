@@ -1,5 +1,5 @@
 function stockPricesAlerts() {
-
+//
 	// Column definitions
 	const COLUMNS = {
 		TICKER: 'A',           // Ticker symbols
