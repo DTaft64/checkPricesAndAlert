@@ -56,11 +56,11 @@ function stockPricesAlerts() {
 
 	const checkboxRange = sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`);
 	checkboxRange.setFormula(`=IF(AND(B2<>"", C2<>""), IF(AND(E2<>"", C2<>""), AND(E2>=(C2*(1-${thresholdPercent})), E2<=(C2*(1+${thresholdPercent}))), FALSE), "")`);	// Adjust as needed
-	// Get and validate data
+		// Get and validate data?
 	const tickerRange = sheet.getRange("B2:B").getValues();	// Adjust as needed
 	const thresholdRange = sheet.getRange("C2:C").getValues();	// Adjust as needed
 	
-	// Filter out empty rows and validate data
+// Filter out empty rows
 	const data = tickerRange.map((row, index) => {
 		return {
 			ticker: row[0],
@@ -69,7 +69,7 @@ function stockPricesAlerts() {
 		};
 	}).filter(row => row.ticker && row.threshold);
 
-	// Process each valid row
+// Process each valid row
 	data.forEach((row) => {
 		try {
 			const formula = `=GOOGLEFINANCE("${row.ticker}", "price")`;
@@ -79,28 +79,29 @@ function stockPricesAlerts() {
 			Utilities.sleep(100);
 			const currentPrice = range.getValue();
 
-			// Skip if currentPrice is #N/A
+		// Skip if currentPrice is #N/A
 			if (currentPrice === '#N/A' || currentPrice === '#N/A' || currentPrice === '') {
 				Logger.log(`Skipping ${row.ticker} due to invalid price data`);
 				return;  // Skip to next iteration
 			}
 
-			// Get current and previous status
+		// Get current and previous status
 			const currentStatus = sheet.getRange(row.rowNumber, 6);  // Column F // Adjust as needed
 			const previousStatus = sheet.getRange(row.rowNumber, 7).getValue(); // Column G // Adjust as needed
 
-			// Check if status changed and price is valid
+		// Check if status changed and price is valid
 			if (currentStatus.getValue() != previousStatus && typeof currentPrice === 'number') {
-				// Set background to red when status changes
+				// Set background to red when status changes in "Last Run" column
 				currentStatus.setBackground('#FF0000');
 				
-				// Email Format And Settings
+			// Email Format And Settings
 				const subject = `Price Alert: ${row.ticker} threshold status changed`;
 				const message = `${row.ticker} is currently trading at ${currentPrice}
 				Target price: ${row.threshold}
 				Status: ${currentStatus.getValue() ? "Entered" : "Exited"} the ±${thresholdPercent*100}% threshold range`;
 				"\nComment: " + comment;
-
+				
+			// Send the email
 				MailApp.sendEmail(emailAddress, subject, message);
 			}
 		} catch (error) {
