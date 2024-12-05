@@ -3,13 +3,14 @@ function stockPricesAlerts() {
 	// Column definitions
 	// COMMAND-F for "Adjust as needed" if you ajust columbs
 	const COLUMNS = {
-		TICKER: 'A',           // Ticker symbols
-		PRICE_ALERT: 'B',      // Price alert thresholds
-		CURRENT: 'C',          // Current prices
-		TF: 'D',              // True/False status
-		LAST_RUN: 'E',        // Previous run status
-		INFO_TAG: 'G',        // Info tags
-		INFO: 'H'             // Info/settings
+		ON_OFF: 'A',          // On/off for the emails
+      		TICKER: 'B',           // Ticker symbols
+		PRICE_ALERT: 'C',      // Price alert thresholds
+		CURRENT: 'D',          // Current prices
+		TF: 'E',              // True/False status
+		LAST_RUN: 'F',        // Previous run status
+		INFO_TAG: 'H',        // Info tags
+		INFO: 'I'             // Info/settings
 	};
 
 	// Row definitions for info column.
@@ -53,10 +54,10 @@ function stockPricesAlerts() {
 	sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`).setBackground(null);	// Clear background color in TF
 
 	const checkboxRange = sheet.getRange(`${COLUMNS.TF}2:${COLUMNS.TF}${lastRow}`);
-	checkboxRange.setFormula(`=IF(AND(A2<>"", B2<>""), IF(AND(C2<>"", B2<>""), AND(C2>=(B2*(1-${thresholdPercent})), C2<=(B2*(1+${thresholdPercent}))), FALSE), "")`);	// Adjust as needed
+	checkboxRange.setFormula(`=IF(AND(B2<>"", C2<>""), IF(AND(D2<>"", C2<>""), AND(D2>=(C2*(1-${thresholdPercent})), D2<=(C2*(1+${thresholdPercent}))), FALSE), "")`);	// Adjust as needed
 	// Get and validate data
-	const tickerRange = sheet.getRange("A2:A").getValues();	// Adjust as needed
-	const thresholdRange = sheet.getRange("B2:B").getValues();	// Adjust as needed
+	const tickerRange = sheet.getRange("B2:B").getValues();	// Adjust as needed
+	const thresholdRange = sheet.getRange("C2:C").getValues();	// Adjust as needed
 	
 	// Filter out empty rows and validate data
 	const data = tickerRange.map((row, index) => {
@@ -71,8 +72,9 @@ function stockPricesAlerts() {
 	data.forEach((row) => {
 		try {
 			const formula = `=GOOGLEFINANCE("${row.ticker}", "price")`;
-			const range = sheet.getRange(row.rowNumber, 3);	// Adjust as needed
-			range.setFormula(formula);
+			const range = sheet.getRange(row.rowNumber, 4);	// Column D // Adjust as needed
+			if (sheet.getRange(`A${row.rowNumber}`).getValue() === false) return; // Skip row if ON_OFF is false
+            range.setFormula(formula);
 			Utilities.sleep(100);
 			const currentPrice = range.getValue();
 
@@ -83,8 +85,8 @@ function stockPricesAlerts() {
 			}
 
 			// Get current and previous status
-			const currentStatus = sheet.getRange(row.rowNumber, 4);  // Column D // Adjust as needed
-			const previousStatus = sheet.getRange(row.rowNumber, 5).getValue(); // Column E // Adjust as needed
+			const currentStatus = sheet.getRange(row.rowNumber, 5);  // Column E // Adjust as needed
+			const previousStatus = sheet.getRange(row.rowNumber, 6).getValue(); // Column F // Adjust as needed
 
 			// Check if status changed and price is valid
 			if (currentStatus.getValue() != previousStatus && typeof currentPrice === 'number') {
