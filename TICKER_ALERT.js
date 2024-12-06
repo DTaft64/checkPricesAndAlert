@@ -23,7 +23,7 @@ function stockPricesAlerts() {
 //Time
 	// Calculates the current time in EST (Eastern time) as a decimal value (hours and fractional minutes, no sec).
 	// 	This is for a later constraint around open/close market hours.
-	const now = new Date();
+	const now = new Date(); // email date offset needs to be a variable in the info column
 	const estOffset = -5; // EST offset from Coordinated Universal Time (UTC)
 	const estTime = new Date(now.getTime() + (estOffset + now.getTimezoneOffset()/60)*3600*1000);
 	const hours = estTime.getHours();
